@@ -2,27 +2,27 @@
 
 ![](public/cap.png)
 
-## Descripción
+## Description
 
-Tu aplicación es un IDE interactivo construido con React, WebContainers API, React Resizable Layout, Monaco Editor y Xterm. Proporciona un entorno de desarrollo completo en el navegador, permitiendo a los usuarios escribir, compilar y ejecutar código de manera eficiente.
+This application is an interactive IDE built with React, WebContainers API, React Resizable Layout, Monaco Editor, and Xterm. It provides a complete development environment in the browser, allowing users to write, compile, and execute code efficiently.
 
-## Características Principales
+## Key Features
 
-- **WebContainers API**: Utiliza la API de WebContainers para ejecutar código en entornos aislados y seguros directamente en el navegador.
-- **React Resizable Layout**: Ofrece una interfaz de usuario flexible y personalizable, permitiendo a los usuarios ajustar y organizar el diseño según sus preferencias.
-- **Monaco Editor**: Proporciona un editor de código potente y altamente personalizable con soporte para múltiples lenguajes y resaltado de sintaxis.
-- **Xterm**: Incorpora un terminal interactivo que permite a los usuarios ejecutar comandos y ver la salida en tiempo real.
+- **WebContainers API**: Utilize the WebContainers API to run code in isolated and secure environments directly in the browser.
+- **React Resizable Layout**: Offers a flexible and customizable user interface, allowing users to adjust and organize the layout according to their preferences.
+- **Monaco Editor**: Provides a powerful and highly customizable code editor with support for multiple languages and syntax highlighting.
+- **Xterm**: Incorporates an interactive terminal that allows users to execute commands and view real-time output.
 
-## Instalación
+## Installation
 
-1. Clona el repositorio:
+1. Clone the repository: 
    
-    `git clone https://github.com/jairayafranco/webcontainer-app.git`
-2. Instala las dependencias: `pnpm install`
-3. Inicia la aplicación: `pnpm run dev`
+   `git clone https://github.com/jairayafranco/webcontainer-app.git`
+2. Install dependencies: `npm install`
+3. Start the application: `npm run dev`
 
-## Uso
+## Usage
 
-1. Accede a la aplicación en tu navegador: `http://localhost:5173`
-2. Interactúa con el IDE para escribir y ejecutar código.
-3. Ajusta el diseño según tus preferencias utilizando las funciones de redimensionamiento.
+1. Access the application in your browser: `http://localhost:5173/`
+2. Interact with the IDE to write and execute code.
+3. Adjust the layout according to your preferences using the resizing functionalities.
