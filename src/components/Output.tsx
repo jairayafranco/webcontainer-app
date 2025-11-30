@@ -1,92 +1,94 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { WebContainer } from '@webcontainer/api';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { files } from '../utils/files';
 import { useEditorStore } from '../store/useEditorStore';
-import { Terminal as EditorTerminal } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
+
+// Singleton para WebContainer - solo una instancia permitida
+export let webContainerSingleton: WebContainer | null = null;
+let isInitializing = false;
 
 export default function Output() {
     const { editorValue, setEditorValue } = useEditorStore();
-    const webContainerInstance = useRef<WebContainer>();
-    const terminalRef = useRef<EditorTerminal>();
     const iframeEl = useRef<HTMLIFrameElement>(null);
+    const initializationRef = useRef(false);
 
-    useEffect(() => {
-        startWebContainer();
+    const writeIndexJS = useCallback(async (content: string) => {
+        if (!webContainerSingleton) return;
+        try {
+            await webContainerSingleton.fs.writeFile('index.js', content);
+        } catch (error) {
+            console.error('Error writing index.js:', error);
+        }
     }, []);
 
+    // Inicialización única del WebContainer
     useEffect(() => {
-        writeIndexJS(editorValue);
-    }, [editorValue]);
+        let isMounted = true;
 
-    const startWebContainer = async () => {
-        const indexJS = files['index.js'].file.contents;
-        setEditorValue(indexJS);
-
-        if (!webContainerInstance.current) {
-            startTerminal();
-            webContainerInstance.current = await WebContainer.boot();
-            await webContainerInstance.current.mount(files);
-
-            webContainerInstance.current?.on('server-ready', (_, url) => {
-                iframeEl.current!.src = url;
-            });
-
-            startShell(terminalRef.current!);
-        }
-    }
-
-    const startShell = async (terminal: EditorTerminal) => {
-        const shellProcess = await webContainerInstance.current?.spawn('jsh', {
-            terminal: {
-                cols: terminal.cols,
-                rows: terminal.rows,
-            },
-        });
-        shellProcess?.output.pipeTo(new WritableStream({
-            write(data) {
-                terminalRef.current?.write(data);
+        const initializeWebContainer = async () => {
+            // Evitar múltiples inicializaciones
+            if (webContainerSingleton || isInitializing || initializationRef.current) {
+                return;
             }
-        }));
 
-        const input = shellProcess?.input.getWriter();
-        terminalRef.current?.onData((data) => {
-            input?.write(data);
-        });
+            isInitializing = true;
+            initializationRef.current = true;
 
-        return shellProcess;
-    }
+            try {
+                // Inicializar el valor del editor solo una vez
+                const indexJS = files['index.js'].file.contents;
+                setEditorValue(indexJS);
 
-    const writeIndexJS = async (content: string) => {
-        await webContainerInstance.current?.fs.writeFile('index.js', content);
-    }
+                // Inicializar WebContainer solo si no existe
+                if (!webContainerSingleton) {
+                    webContainerSingleton = await WebContainer.boot();
+                    await webContainerSingleton.mount(files);
 
-    const startTerminal = () => {
-        const fitAddon = new FitAddon();
+                    // Configurar listener para server-ready con verificación robusta
+                    webContainerSingleton.on('server-ready', (_, url) => {
+                        if (isMounted && iframeEl.current) {
+                            iframeEl.current.src = url;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing WebContainer:', error);
+                initializationRef.current = false;
+                isInitializing = false;
+            } finally {
+                isInitializing = false;
+            }
+        };
 
-        terminalRef.current = new EditorTerminal({
-            convertEol: true,
-        });
-        terminalRef.current.loadAddon(fitAddon);
-        terminalRef.current.open(document.querySelector('#terminal')!);
+        initializeWebContainer();
 
-        fitAddon.fit();
-    }
+        return () => {
+            isMounted = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Solo se ejecuta una vez al montar el componente
+
+    // Escribir cambios en el editor
+    useEffect(() => {
+        if (editorValue && webContainerSingleton && initializationRef.current) {
+            writeIndexJS(editorValue).catch((error) => {
+                console.error('Error writing index.js:', error);
+            });
+        }
+    }, [editorValue, writeIndexJS]);
 
     return (
         <iframe
             ref={iframeEl}
-            src={''}
+            src=""
             style={{
                 width: '100%',
                 height: '100%',
                 border: 'none',
                 background: 'white',
                 color: 'black',
-                textAlign: 'center'
             }}
-        >
-        </iframe>
+            title="WebContainer Output"
+        />
     );
 }

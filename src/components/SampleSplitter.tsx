@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import { useState, ComponentPropsWithoutRef } from 'react'
 import { cn } from '../utils/cn'
+
+interface SampleSplitterProps extends ComponentPropsWithoutRef<'div'> {
+    id?: string
+    dir?: 'horizontal' | 'vertical' | string
+    isDragging?: boolean
+}
 
 export default function SampleSplitter({
     id = 'drag-bar',
     dir,
     isDragging,
     ...props
-}: any) {
+}: SampleSplitterProps) {
     const [isFocused, setIsFocused] = useState(false)
 
     return (

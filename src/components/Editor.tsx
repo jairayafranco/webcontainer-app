@@ -11,7 +11,7 @@ export default function Editor() {
             defaultLanguage={"javascript"}
             theme="vs-dark"
             defaultValue={editorValue}
-            onChange={(value) => setEditorValue(value as string)}
+            onChange={(value) => setEditorValue(value ?? "")}
         />
     );
 }
